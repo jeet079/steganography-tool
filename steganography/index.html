@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixelVault - Advanced Image Steganography</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="app-header">
+      <div>
+        <h1 class="app-title">PixelVault</h1>
+        <p class="app-subtitle">Advanced Image Steganography Tool</p>
+      </div>
+      <div class="header-controls">
+        <select class="language-selector" id="languageSelector">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="ja">日本語</option>
+        </select>
+        <button id="themeToggle" class="btn btn-secondary" style="padding: 0.25rem 0.5rem;">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="app-content">
+      <!-- Encode Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <i class="fas fa-lock panel-icon"></i>
+            Hide Secret Message
+          </h2>
+        </div>
+
+        <div class="tab-container">
+          <div class="tab active" data-tab="single">Single Image</div>
+          <div class="tab" data-tab="batch">Batch Process</div>
+        </div>
+
+        <div class="tab-content active" id="singleTab">
+          <div class="form-group">
+            <label class="form-label">
+              Upload Cover Image
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Select an image to hide your message in. PNG or JPEG recommended.</span>
+              </span>
+            </label>
+            <div class="file-upload" id="uploadContainer">
+              <input type="file" id="upload" accept="image/png, image/jpeg, image/webp" class="file-upload-input">
+              <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+              <div class="file-upload-text">Drag & Drop or Click to Browse</div>
+              <div class="file-upload-hint">Supports PNG, JPEG, WEBP (Max 10MB)</div>
+            </div>
+          </div>
+
+          <div class="image-preview-container" id="previewContainer">
+            <div class="image-placeholder">
+              <i class="fas fa-image image-placeholder-icon"></i>
+              <div>No image selected</div>
+            </div>
+            <img class="image-preview" id="previewImage" style="display: none;">
+            <div class="pixel-info" id="pixelInfo"></div>
+            <div class="debug-overlay" id="debugOverlay"></div>
+            <div class="magnifier" id="magnifier">
+              <div class="magnifier-content" id="magnifierContent"></div>
+            </div>
+          </div>
+
+          <div class="comparison-slider" id="comparisonSlider">
+            <div class="comparison-before">
+              <img id="beforeImage" class="comparison-image">
+            </div>
+            <div class="comparison-after">
+              <img id="afterImage" class="comparison-image">
+            </div>
+            <div class="comparison-handle"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Secret Message
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Enter the text you want to hide in the image. You can also upload a file.</span>
+              </span>
+            </label>
+            <textarea id="secret" class="form-control" placeholder="Enter your secret message here..."></textarea>
+            <div class="character-counter">
+              <span id="charCount">0</span> characters | 
+              <span id="wordCount">0</span> words | 
+              <span id="byteCount">0</span> bytes
+            </div>
+            <div class="btn-group" style="margin-top: 0.5rem;">
+              <button id="uploadTextFile" class="btn btn-secondary">
+                <i class="fas fa-file-upload"></i> Upload Text File
+              </button>
+              <button id="uploadBinaryFile" class="btn btn-secondary">
+                <i class="fas fa-file-archive"></i> Upload Binary File
+              </button>
+              <input type="file" id="textFileInput" style="display: none;">
+              <input type="file" id="binaryFileInput" style="display: none;">
+            </div>
+          </div>
+
+          <div class="options-panel">
+            <div class="option-item">
+              <span class="option-label">
+                Bit Depth:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Higher bit depth allows more data but makes changes more visible</span>
+                </span>
+              </span>
+              <select id="bitDepth" class="form-control" style="width: auto;">
+                <option value="1">LSB (1 bit per channel)</option>
+                <option value="2">2 bits per channel</option>
+                <option value="3">3 bits per channel</option>
+                <option value="4">4 bits per channel</option>
+              </select>
+            </div>
+            <div class="option-item">
+              <span class="option-label">
+                Encryption:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Encrypt message before hiding for extra security</span>
+                </span>
+              </span>
+              <label class="switch">
+                <input type="checkbox" id="encryptToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="form-group" id="passwordGroup" style="display: none; margin-top: 0.5rem;">
+              <input type="password" id="encryptPassword" class="form-control" placeholder="Enter encryption password">
+              <div class="password-strength">
+                <div class="password-strength-bar" id="passwordStrengthBar"></div>
+              </div>
+            </div>
+            <div class="option-item">
+              <span class="option-label">
+                Encryption Method:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Select encryption algorithm</span>
+                </span>
+              </span>
+              <select id="encryptionMethod" class="form-control" style="width: auto;">
+                <option value="xor">XOR (Basic)</option>
+                <option value="aes">AES (Strong)</option>
+              </select>
+            </div>
+            <div class="option-item">
+              <span class="option-label">
+                Watermark:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Add visible watermark to mark image as modified</span>
+                </span>
+              </span>
+              <label class="switch">
+                <input type="checkbox" id="watermarkToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="form-group" id="watermarkTextGroup" style="display: none; margin-top: 0.5rem;">
+              <input type="text" id="watermarkText" class="form-control" placeholder="Enter watermark text" value="PixelVault">
+            </div>
+            <div class="form-group" id="watermarkImageGroup" style="display: none; margin-top: 0.5rem;">
+              <label class="form-label">Upload Watermark Image</label>
+              <input type="file" id="watermarkImage" class="form-control" accept="image/png, image/jpeg">
+              <img id="watermarkPreview" class="watermark-preview">
+            </div>
+            <div class="option-item">
+              <span class="option-label">
+                Watermark Type:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Choose between text or image watermark</span>
+                </span>
+              </span>
+              <select id="watermarkType" class="form-control" style="width: auto;">
+                <option value="text">Text</option>
+                <option value="image">Image</option>
+              </select>
+            </div>
+            <div class="option-item">
+              <span class="option-label">
+                Data Compression:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Compress message before encoding to save space</span>
+                </span>
+              </span>
+              <label class="switch">
+                <input type="checkbox" id="compressToggle" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="option-item">
+              <span class="option-label">
+                Algorithm:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Select steganography algorithm</span>
+                </span>
+              </span>
+              <select id="algorithm" class="form-control" style="width: auto;">
+                <option value="lsb">LSB (Least Significant Bit)</option>
+                <option value="pvd">PVD (Pixel Value Differencing)</option>
+                <option value="fib">Fibonacci LSB</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container" id="encodeProgress" style="display: none;">
+            <div class="progress-bar" id="encodeProgressBar"></div>
+          </div>
+
+          <div class="btn-group">
+            <button id="encodeBtn" class="btn btn-primary">
+              <i class="fas fa-lock"></i> Hide Message
+            </button>
+            <button id="compareBtn" class="btn btn-secondary" style="display: none;">
+              <i class="fas fa-exchange-alt"></i> Compare
+            </button>
+            <button id="resetBtn" class="btn btn-danger">
+              <i class="fas fa-redo"></i> Reset
+            </button>
+          </div>
+
+          <div class="btn-group" style="margin-top: 0.5rem; display: none;" id="downloadGroup">
+            <a id="downloadLink" class="btn btn-success" download="stego-image.png">
+              <i class="fas fa-download"></i> Download Stego Image
+            </a>
+            <button id="debugBtn" class="btn btn-secondary">
+              <i class="fas fa-bug"></i> Debug View
+            </button>
+            <button id="zipBtn" class="btn btn-secondary">
+              <i class="fas fa-file-archive"></i> Save as ZIP
+            </button>
+          </div>
+
+          <div id="capacityInfo" style="margin-top: 1rem; font-size: 0.9rem; color: #6c757d;"></div>
+
+          <div class="history-panel" id="encodeHistory">
+            <div class="form-label">Recent Encodings</div>
+            <!-- History items will be added here dynamically -->
+          </div>
+
+          <div class="developer-console" id="encodeConsole">
+            <div class="form-label">Encoding Log</div>
+            <!-- Console logs will be added here dynamically -->
+          </div>
+
+          <div class="debug-color-picker" style="display: none;" id="debugColorPicker">
+            <div class="debug-color-option selected" style="background-color: rgba(255, 0, 0, 0.5);" data-color="rgba(255, 0, 0, 0.5)"></div>
+            <div class="debug-color-option" style="background-color: rgba(0, 255, 0, 0.5);" data-color="rgba(0, 255, 0, 0.5)"></div>
+            <div class="debug-color-option" style="background-color: rgba(0, 0, 255, 0.5);" data-color="rgba(0, 0, 255, 0.5)"></div>
+            <div class="debug-color-option" style="background-color: rgba(255, 255, 0, 0.5);" data-color="rgba(255, 255, 0, 0.5)"></div>
+            <div class="debug-color-option" style="background-color: rgba(255, 0, 255, 0.5);" data-color="rgba(255, 0, 255, 0.5)"></div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="batchTab">
+          <div class="form-group">
+            <label class="form-label">
+              Upload Multiple Images
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Select multiple images to process in batch</span>
+              </span>
+            </label>
+            <div class="file-upload" id="batchUploadContainer">
+              <input type="file" id="batchUpload" accept="image/png, image/jpeg, image/webp" multiple class="file-upload-input">
+              <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+              <div class="file-upload-text">Drag & Drop or Click to Browse</div>
+              <div class="file-upload-hint">Supports PNG, JPEG, WEBP (Max 10MB each)</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Batch Secret Message
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Enter the text to hide in all images</span>
+              </span>
+            </label>
+            <textarea id="batchSecret" class="form-control" placeholder="Enter your secret message here..."></textarea>
+            <div class="character-counter">
+              <span id="batchCharCount">0</span> characters | 
+              <span id="batchWordCount">0</span> words | 
+              <span id="batchByteCount">0</span> bytes
+            </div>
+          </div>
+
+          <div class="options-panel">
+            <div class="option-item">
+              <span class="option-label">
+                Bit Depth:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Higher bit depth allows more data but makes changes more visible</span>
+                </span>
+              </span>
+              <select id="batchBitDepth" class="form-control" style="width: auto;">
+                <option value="1">LSB (1 bit per channel)</option>
+                <option value="2">2 bits per channel</option>
+                <option value="3">3 bits per channel</option>
+                <option value="4">4 bits per channel</option>
+              </select>
+            </div>
+            <div class="option-item">
+              <span class="option-label">
+                Encryption:
+                <span class="tooltip">
+                  <i class="fas fa-info-circle tooltip-icon"></i>
+                  <span class="tooltip-text">Encrypt message before hiding for extra security</span>
+                </span>
+              </span>
+              <label class="switch">
+                <input type="checkbox" id="batchEncryptToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="form-group" id="batchPasswordGroup" style="display: none; margin-top: 0.5rem;">
+              <input type="password" id="batchEncryptPassword" class="form-control" placeholder="Enter encryption password">
+              <div class="password-strength">
+                <div class="password-strength-bar" id="batchPasswordStrengthBar"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="batch-list" id="batchList">
+            <!-- Batch items will be added here dynamically -->
+          </div>
+
+          <div class="progress-container" id="batchProgress" style="display: none;">
+            <div class="progress-bar" id="batchProgressBar"></div>
+          </div>
+
+          <div class="btn-group">
+            <button id="batchEncodeBtn" class="btn btn-primary">
+              <i class="fas fa-lock"></i> Process Batch
+            </button>
+            <button id="batchResetBtn" class="btn btn-danger">
+              <i class="fas fa-redo"></i> Clear Batch
+            </button>
+          </div>
+
+          <div class="btn-group" style="margin-top: 0.5rem; display: none;" id="batchDownloadGroup">
+            <button id="batchDownloadBtn" class="btn btn-success">
+              <i class="fas fa-download"></i> Download All as ZIP
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decode Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <i class="fas fa-unlock panel-icon"></i>
+            Extract Hidden Message
+          </h2>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Upload Stego Image
+            <span class="tooltip">
+              <i class="fas fa-info-circle tooltip-icon"></i>
+              <span class="tooltip-text">Select an image with hidden data to extract the message</span>
+            </span>
+          </label>
+          <div class="file-upload" id="stegoUploadContainer">
+            <input type="file" id="stegoUpload" accept="image/png, image/jpeg, image/webp" class="file-upload-input">
+            <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+            <div class="file-upload-text">Drag & Drop or Click to Browse</div>
+            <div class="file-upload-hint">Supports PNG, JPEG, WEBP (Max 10MB)</div>
+          </div>
+        </div>
+
+        <div class="image-preview-container" id="stegoPreviewContainer">
+          <div class="image-placeholder">
+            <i class="fas fa-image image-placeholder-icon"></i>
+            <div>No image selected</div>
+          </div>
+          <img class="image-preview" id="stegoPreviewImage" style="display: none;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Extracted Message
+            <span class="tooltip">
+              <i class="fas fa-info-circle tooltip-icon"></i>
+              <span class="tooltip-text">The extracted message will appear here</span>
+            </span>
+          </label>
+          <textarea id="extracted" class="form-control" placeholder="Extracted message will appear here..." readonly></textarea>
+          <div class="character-counter">
+            <span id="extractedCharCount">0</span> characters | 
+            <span id="extractedWordCount">0</span> words | 
+            <span id="extractedByteCount">0</span> bytes
+          </div>
+        </div>
+
+        <div class="options-panel">
+          <div class="option-item">
+            <span class="option-label">
+              Bit Depth:
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Match the bit depth used when encoding</span>
+              </span>
+            </span>
+            <select id="decodeBitDepth" class="form-control" style="width: auto;">
+              <option value="1">LSB (1 bit per channel)</option>
+              <option value="2">2 bits per channel</option>
+              <option value="3">3 bits per channel</option>
+              <option value="4">4 bits per channel</option>
+            </select>
+          </div>
+          <div class="option-item">
+            <span class="option-label">
+              Encrypted:
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Check if message was encrypted before hiding</span>
+              </span>
+            </span>
+            <label class="switch">
+              <input type="checkbox" id="decryptToggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="form-group" id="decryptPasswordGroup" style="display: none; margin-top: 0.5rem;">
+            <input type="password" id="decryptPassword" class="form-control" placeholder="Enter decryption password">
+          </div>
+          <div class="option-item">
+            <span class="option-label">
+              Encryption Method:
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Select encryption algorithm used</span>
+              </span>
+            </span>
+            <select id="decodeEncryptionMethod" class="form-control" style="width: auto;">
+              <option value="xor">XOR (Basic)</option>
+              <option value="aes">AES (Strong)</option>
+            </select>
+          </div>
+          <div class="option-item">
+            <span class="option-label">
+              Compressed:
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Check if message was compressed before encoding</span>
+              </span>
+            </span>
+            <label class="switch">
+              <input type="checkbox" id="decompressToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="option-item">
+            <span class="option-label">
+              Algorithm:
+              <span class="tooltip">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Select steganography algorithm used</span>
+              </span>
+            </span>
+            <select id="decodeAlgorithm" class="form-control" style="width: auto;">
+              <option value="lsb">LSB (Least Significant Bit)</option>
+              <option value="pvd">PVD (Pixel Value Differencing)</option>
+              <option value="fib">Fibonacci LSB</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="progress-container" id="decodeProgress" style="display: none;">
+          <div class="progress-bar" id="decodeProgressBar"></div>
+        </div>
+
+        <div class="btn-group">
+          <button id="decodeBtn" class="btn btn-primary">
+            <i class="fas fa-unlock"></i> Extract Message
+          </button>
+          <button id="copyBtn" class="btn btn-secondary">
+            <i class="fas fa-copy"></i> Copy to Clipboard
+          </button>
+          <button id="clearBtn" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Clear
+          </button>
+        </div>
+
+        <div class="btn-group" style="margin-top: 0.5rem;">
+          <button id="saveTextBtn" class="btn btn-secondary">
+            <i class="fas fa-save"></i> Save as Text File
+          </button>
+          <button id="validateBtn" class="btn btn-secondary">
+            <i class="fas fa-check"></i> Validate Stego
+          </button>
+        </div>
+
+        <div class="qr-container" id="qrContainer">
+          <div class="form-label">QR Code of Extracted Message</div>
+          <div class="qr-code" id="qrCode"></div>
+          <button id="downloadQrBtn" class="btn btn-secondary" style="margin-top: 0.5rem;">
+            <i class="fas fa-download"></i> Download QR Code
+          </button>
+        </div>
+
+        <div class="history-panel" id="decodeHistory">
+          <div class="form-label">Recent Decodings</div>
+          <!-- History items will be added here dynamically -->
+        </div>
+
+        <div class="developer-console" id="decodeConsole">
+          <div class="form-label">Decoding Log</div>
+          <!-- Console logs will be added here dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <canvas id="canvas" style="display: none;"></canvas>
+  <canvas id="originalCanvas" style="display: none;"></canvas>
+  <canvas id="stegoCanvas" style="display: none;"></canvas>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+
+  <script src="script.js"></script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
